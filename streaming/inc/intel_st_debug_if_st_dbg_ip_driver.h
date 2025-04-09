@@ -27,19 +27,21 @@
 #pragma once
 
 #include <stdlib.h>
+#include <sys/types.h>
 #include "intel_st_debug_if_packet.h"
 #include "intel_st_debug_if_platform.h"
 #include "intel_fpga_platform.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define ALIGN_TO(n) (((n) >> ST_DBG_IP_BUFF_ALIGN_POW_2) << ST_DBG_IP_BUFF_ALIGN_POW_2)
 #define GET_ALIGNED_SZ(n) (ALIGN_TO(((n) + (1 << ST_DBG_IP_BUFF_ALIGN_POW_2) - 1)))
 
-#define SUPPORTED_TYPE 0x5244444D
-#define SUPPORTED_VERSION 0x0
+#define SUPPORTED_TYPE_SIGNATURE 0x5244444D
+#define SUPPORTED_VERSION 1
 #define INIT_ERROR_CODE_MISSING_INFO -1
 #define INIT_ERROR_CODE_INCOMPATIBLE_IP -2
 
@@ -59,33 +61,35 @@ JOP_MEM_SIZE_2K is used to match SW H2T/T2H memory base address with HW tcl defi
     }
 */
 #define JOP_MEM_SIZE_2K 2048
-//H2T_MEM_BASE_2K wiil be used if h2t-t2h-mem-size <= JOP_MEM_SIZE_2K
+// H2T_MEM_BASE_2K wil be used if h2t-t2h-mem-size <= JOP_MEM_SIZE_2K
 #define H2T_MEM_BASE_2K 0x800
-//T2H_MEM_BASE_4K wiil be used if h2t-t2h-mem-size <= JOP_MEM_SIZE_2K
+// T2H_MEM_BASE_4K wil be used if h2t-t2h-mem-size <= JOP_MEM_SIZE_2K
 #define T2H_MEM_BASE_4K 0x1000
+// MGMT_MEM_BASE_4K wil be used if h2t-t2h-mem-size <= JOP_MEM_SIZE_2K
+#define MGMT_MEM_BASE_4K (T2H_MEM_BASE_4K + H2T_MEM_BASE_2K)
 
+    typedef struct
+    {
+        uint32_t ST_DBG_IP_CSR_BASE_ADDR;
 
-typedef struct {
-  FPGA_MMIO_INTERFACE_HANDLE  mmio_handle ;
-}  intel_stream_debug_if_driver_context;
+        uint32_t H2T_MEM_BASE_ADDR;
+        size_t H2T_MEM_SZ;
 
-typedef struct {
-    uint32_t ST_DBG_IP_CSR_BASE_ADDR;
+        uint32_t T2H_MEM_BASE_ADDR;
+        size_t T2H_MEM_SZ;
 
-    uint32_t H2T_MEM_BASE_ADDR;
-    size_t H2T_MEM_SZ;
+        uint32_t MGMT_MEM_BASE_ADDR;
+        size_t MGMT_MEM_SZ;
 
-    uint32_t T2H_MEM_BASE_ADDR;
-    size_t T2H_MEM_SZ;
+        uint32_t MGMT_RSP_MEM_BASE_ADDR;
+        size_t MGMT_RSP_MEM_SZ;
+    } ST_DBG_IP_DESIGN_INFO;
 
-    uint32_t MGMT_MEM_BASE_ADDR;
-    size_t MGMT_MEM_SZ;
-
-    uint32_t MGMT_RSP_MEM_BASE_ADDR;
-    size_t MGMT_RSP_MEM_SZ;
-} ST_DBG_IP_DESIGN_INFO;
-
-extern ST_DBG_IP_DESIGN_INFO g_std_dbg_ip_info;
+    typedef struct
+    {
+        FPGA_MMIO_INTERFACE_HANDLE mmio_handle;
+        ST_DBG_IP_DESIGN_INFO std_dbg_ip_info;
+    } intel_stream_debug_if_driver_context;
 
 // The ST Debug IP allows these to be queried dynamically, but since we are not using malloc,
 // I will reserve enough space for the upperlimit of how many descriptors the IP supports.
@@ -94,7 +98,7 @@ extern ST_DBG_IP_DESIGN_INFO g_std_dbg_ip_info;
 
 // This is used to keep addresses passed to the H2T / MGMT CSR aligned to the native word size
 // of the ST Debug IP's DMA masters.
-#define ST_DBG_IP_BUFF_ALIGN_POW_2 3 // Aligned to 64-bit boundaries
+#define ST_DBG_IP_BUFF_ALIGN_POW_2 3  // Aligned to 64-bit boundaries
 
 // Config CSR
 #define ST_DBG_IP_CONFIG_TYPE 0x0
@@ -103,8 +107,10 @@ extern ST_DBG_IP_DESIGN_INFO g_std_dbg_ip_info;
 
 #define ST_DBG_IP_CONFIG_RESET_AND_LOOPBACK 0x20
 #define ST_DBG_IP_CONFIG_H2T_T2H_RESET_FIELD 0x1
-#define ST_DBG_IP_CONFIG_LOOPBACK_FIELD 0x2
+#define ST_DBG_IP_CONFIG_H2T_T2H_LOOPBACK_FIELD 0x2
 #define ST_DBG_IP_CONFIG_ENABLE_INT_FIELD 0x4
+#define ST_DBG_IP_CONFIG_MGMT_AND_RSP_RESET_FIELD 0x10
+#define ST_DBG_IP_CONFIG_MGMT_AND_RSP_LOOPBACK_FIELD 0x20
 
 #define ST_DBG_IP_CONFIG_H2T_T2H_MEM 0x24
 #define ST_DBG_IP_CONFIG_MGMT_MGMT_RSP_MEM 0x28
@@ -132,57 +138,61 @@ extern ST_DBG_IP_DESIGN_INFO g_std_dbg_ip_info;
 #define ST_DBG_IP_T2H_DESCRIPTORS_DONE 0x218
 
 // MGMT CSR
-#define ST_DBG_IP_MGMT_AVAILABLE_SLOTS 0x1100
-#define ST_DBG_IP_MGMT_HOW_LONG 0x1108
-#define ST_DBG_IP_MGMT_WHERE 0x110C
-#define ST_DBG_IP_MGMT_CHANNEL_ID_PUSH 0x1114
+#define ST_DBG_IP_MGMT_AVAILABLE_SLOTS 0x300
+#define ST_DBG_IP_MGMT_HOW_LONG 0x308
+#define ST_DBG_IP_MGMT_WHERE 0x30C
+#define ST_DBG_IP_MGMT_CHANNEL_ID_PUSH 0x314
 
 // MGMT_RSP CSR
-#define ST_DBG_IP_MGMT_RSP_HOW_LONG 0x1208
-#define ST_DBG_IP_MGMT_RSP_WHERE 0x120C
-#define ST_DBG_IP_MGMT_RSP_CHANNEL_ID_ADVANCE 0x1214
-#define ST_DBG_IP_MGMT_RSP_DESCRIPTORS_DONE 0x1218
+#define ST_DBG_IP_MGMT_RSP_HOW_LONG 0x408
+#define ST_DBG_IP_MGMT_RSP_WHERE 0x40C
+#define ST_DBG_IP_MGMT_RSP_CHANNEL_ID_ADVANCE 0x414
+#define ST_DBG_IP_MGMT_RSP_DESCRIPTORS_DONE 0x418
 
 // Common masks
 #define ST_DBG_IP_LAST_DESCRIPTOR_MASK 0x80000000
 #define ST_DBG_IP_HOW_LONG_MASK 0x7FFFFFFF
 
-// Driver init
-int init_driver(intel_stream_debug_if_driver_context *context, FPGA_MMIO_INTERFACE_HANDLE mmio_handle);
-void set_design_info(ST_DBG_IP_DESIGN_INFO info);
+    // Driver init
+    int init_driver(intel_stream_debug_if_driver_context* context,
+                    uint32_t user_input_h2t_t2h_mem_size,
+                    FPGA_MMIO_INTERFACE_HANDLE mmio_handle);
+    void set_design_info(ST_DBG_IP_DESIGN_INFO info);
+    void init_st_dbg_ip_info();
 
-// H2T
-uint32_t get_h2t_buffer(size_t sz);
-int push_h2t_data(H2T_PACKET_HEADER *header, uint32_t payload);
+    // H2T
+    uint32_t get_h2t_buffer(size_t sz);
+    int push_h2t_data(H2T_PACKET_HEADER* header, uint32_t payload);
 
-// MGMT
-uint32_t get_mgmt_buffer(size_t sz);
-int push_mgmt_data(MGMT_PACKET_HEADER *header, uint32_t payload);
+    // MGMT
+    uint32_t get_mgmt_buffer(size_t sz);
+    int push_mgmt_data(MGMT_PACKET_HEADER* header, uint32_t payload);
 
-// T2H
-int get_t2h_data(H2T_PACKET_HEADER *header, uint32_t *payload);
-void t2h_data_complete();
+    // T2H
+    int get_t2h_data(H2T_PACKET_HEADER* header, uint32_t* payload);
+    void t2h_data_complete();
 
-// MGMT RSP
-int get_mgmt_rsp_data(MGMT_PACKET_HEADER *header, uint32_t *payload);
-void mgmt_rsp_data_complete();
+    // MGMT RSP
+    int get_mgmt_rsp_data(MGMT_PACKET_HEADER* header, uint32_t* payload);
+    void mgmt_rsp_data_complete();
 
-// Config CSR
-void set_loopback_mode(int val);
-int get_loopback_mode();
-void enable_interrupts(int val);
-int get_mgmt_support();
-int check_version_and_type(); // A non-zero return value indicates the IP is incompatible
-void assert_h2t_t2h_reset();
+    // Config CSR
+    void set_loopback_mode(int val);
+    int get_loopback_mode();
+    void enable_interrupts(int val);
+    int get_mgmt_support();
+    int check_version_and_type(
+        uint32_t* version);  // A non-zero return value indicates the IP is incompatible
+    void assert_h2t_t2h_reset();
 
-// buffer data exchange
-void memcpy64_fpga2host(int32_t fpga_buff, uint64_t *host_buff, size_t len);
-void memcpy64_host2fpga(uint64_t *host_buff, int32_t fpga_buff, size_t len);
+    // buffer data exchange
+    void memcpy64_fpga2host(int32_t fpga_buff, uint64_t* host_buff, size_t len);
+    void memcpy64_host2fpga(uint64_t* host_buff, int32_t fpga_buff, size_t len);
 
-// Misc settings
-int set_driver_param(const char *param, const char *val);
-char *get_driver_param(const char *param);
+    // Misc settings
+    int set_driver_param(const char* param, const char* val);
+    char* get_driver_param(const char* param);
 
-#ifdef __cplusplus    
+#ifdef __cplusplus
 }
 #endif

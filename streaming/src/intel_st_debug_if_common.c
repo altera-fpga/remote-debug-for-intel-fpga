@@ -31,42 +31,53 @@
 
 #include "intel_st_debug_if_common.h"
 
-void generate_expected_handle_message(char *buff, size_t buff_size, const char *sock_name, int handle) {
+void generate_expected_handle_message(char* buff,
+                                      size_t buff_size,
+                                      const char* sock_name,
+                                      int handle)
+{
     snprintf(buff, buff_size, "%s HANDLE=%d", sock_name, handle);
 }
 
-int parse_handle_id(const char *buff) {
-    const char *HANDLE_MSG = "HANDLE=";
+int parse_handle_id(const char* buff)
+{
+    const char* HANDLE_MSG = "HANDLE=";
     const size_t handle_msg_strlen = 7;
-    const char *pos = strstr(buff, HANDLE_MSG);
-    if (pos != NULL) {
+    const char* pos = strstr(buff, HANDLE_MSG);
+    if (pos != NULL)
+    {
         return atoi(pos + handle_msg_strlen);
     }
     return -1;
 }
 
-void zero_mem(void *a, size_t length) {
+void zero_mem(void* a, size_t length)
+{
     typedef size_t big_type;
     size_t big_size = sizeof(big_type);
     size_t leftover_offset = 0;
+    size_t i;
 
-    if (length > big_size) {
+    if (length > big_size)
+    {
         size_t fast_transfers = length / big_size;
         leftover_offset = fast_transfers * big_size;
-        big_type *big_a = (big_type *)a;
-        for (size_t i = 0; i < fast_transfers; ++i) {
+        big_type* big_a = (big_type*) a;
+        for (i = 0; i < fast_transfers; ++i)
+        {
             big_a[i] = 0;
         }
-
     }
     size_t leftover = length % big_size;
-    for (size_t i = 0; i < leftover; ++i) {
-        ((char *)a)[i + leftover_offset] = 0;
+    for (i = 0; i < leftover; ++i)
+    {
+        ((char*) a)[i + leftover_offset] = 0;
     }
 }
 
-int get_random_id() {
-    srand((unsigned int)clock() * (unsigned int)time(NULL));
+int get_random_id()
+{
+    srand((unsigned int) clock() * (unsigned int) time(NULL));
     // We never want a 0 ID
     int result = 0;
     while (result == 0)

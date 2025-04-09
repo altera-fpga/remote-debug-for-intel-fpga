@@ -34,15 +34,19 @@ extern "C"
 {
 #endif
 
-typedef struct {
-  intel_stream_debug_if_driver_context driver_cxt ;
-  size_t h2t_t2h_mem_size ;
-  int port ;
-} intel_remote_debug_server_context;
+    typedef struct
+    {
+        intel_stream_debug_if_driver_context driver_cxt;
+        size_t h2t_t2h_mem_size;
+        int port;
+    } intel_remote_debug_server_context;
 
-int start_st_dbg_transport_server_over_tcpip(intel_remote_debug_server_context *context);
-void init_st_dbg_transport_server_over_tcpip(intel_remote_debug_server_context *context, FPGA_MMIO_INTERFACE_HANDLE mmio_handle, size_t size, int port);
-void terminate_st_dbg_transport_server_over_tcpip();
+    int start_st_dbg_transport_server_over_tcpip(intel_remote_debug_server_context* context);
+    void init_st_dbg_transport_server_over_tcpip(intel_remote_debug_server_context* context,
+                                                 FPGA_MMIO_INTERFACE_HANDLE mmio_handle,
+                                                 size_t size,
+                                                 int port);
+    void terminate_st_dbg_transport_server_over_tcpip();
 
 #ifdef __cplusplus
 }

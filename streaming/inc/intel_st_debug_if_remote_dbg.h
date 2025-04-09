@@ -31,11 +31,10 @@
 class IRemoteDebug
 {
 public:
-  IRemoteDebug() = default;
-  IRemoteDebug(const IRemoteDebug&) = delete;
-  IRemoteDebug& operator=(const IRemoteDebug&) = delete;
-  virtual ~IRemoteDebug() = default;
-  virtual int run(size_t h2t_t2h_mem_size, const char *address, int port) = 0;
-  virtual void terminate(){}
-
+    IRemoteDebug() = default;
+    IRemoteDebug(const IRemoteDebug&) = delete;
+    IRemoteDebug& operator=(const IRemoteDebug&) = delete;
+    virtual ~IRemoteDebug() = default;
+    virtual int run(size_t h2t_t2h_mem_size, const char* address, int port) = 0;
+    virtual void terminate() {}
 };

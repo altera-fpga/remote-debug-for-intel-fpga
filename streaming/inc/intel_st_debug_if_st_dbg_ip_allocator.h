@@ -28,7 +28,8 @@
 
 #include <stdlib.h>
 
-typedef struct {
+typedef struct
+{
     uint32_t raw_buff;
     size_t span;
     size_t write_offset;
@@ -36,7 +37,7 @@ typedef struct {
     size_t space_available;
 } CIRCLE_BUFF;
 
-static inline void cbuff_init(CIRCLE_BUFF *cbuff, uint32_t raw_buff, size_t raw_buff_sz)
+static inline void cbuff_init(CIRCLE_BUFF* cbuff, uint32_t raw_buff, size_t raw_buff_sz)
 {
     cbuff->raw_buff = raw_buff;
     cbuff->span = raw_buff_sz;
@@ -45,18 +46,19 @@ static inline void cbuff_init(CIRCLE_BUFF *cbuff, uint32_t raw_buff, size_t raw_
     cbuff->space_available = raw_buff_sz;
 }
 
-// No safety here. Assumptions are there is enough valid data to prevent underflowing, and 'amt' is > 0.
-static inline void cbuff_free(CIRCLE_BUFF *cbuff, size_t amt) {
+// No safety here. Assumptions are there is enough valid data to prevent underflowing, and 'amt' is
+// > 0.
+static inline void cbuff_free(CIRCLE_BUFF* cbuff, size_t amt)
+{
     cbuff->space_available += amt;
     cbuff->read_offset = (cbuff->read_offset + amt) % cbuff->span;
 }
 
 // No safety here. Assumptions are there is enough space to prevent overflowing, and 'amt' is > 0.
-static inline uint32_t cbuff_alloc(CIRCLE_BUFF *cbuff, size_t amt)
+static inline uint32_t cbuff_alloc(CIRCLE_BUFF* cbuff, size_t amt)
 {
     cbuff->space_available -= amt;
     uint32_t result = cbuff->raw_buff + cbuff->write_offset;
     cbuff->write_offset = (cbuff->write_offset + amt) % cbuff->span;
     return result;
 }
-

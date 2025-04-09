@@ -26,7 +26,6 @@
 
 #pragma once
 
-
 // Platform defines
 #define STI_PLATFORM_NIOS_UC_TCPIP 1
 #define STI_PLATFORM_WINDOWS 2
@@ -34,5 +33,4 @@
 
 #define STI_NOSYS_PROT_PLATFORM STI_PLATFORM_LINUX
 
-#define ENABLE_MGMT 0
-
+#define ENABLE_MGMT 1

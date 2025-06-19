@@ -132,10 +132,8 @@ int init_driver(intel_stream_debug_if_driver_context* context,
 
 void init_st_dbg_ip_info()
 {
-    uint64_t mem_depth = fpga_read_64(g_mmio_handle, ST_DBG_IP_CONFIG_H2T_T2H_MEM);
-
-    uint32_t h2t_t2h_mem_size = mem_depth & 0xFFFFFFFF;
-    uint32_t mgmt_mem_size = mem_depth >> 32;
+    uint32_t h2t_t2h_mem_size = fpga_read_32(g_mmio_handle, ST_DBG_IP_CONFIG_H2T_T2H_MEM);
+    uint32_t mgmt_mem_size = fpga_read_32(g_mmio_handle, ST_DBG_IP_CONFIG_MGMT_MGMT_RSP_MEM);
     init_st_dbg_ip_info_given_sizes(h2t_t2h_mem_size, mgmt_mem_size);
 }
 
@@ -181,9 +179,8 @@ void init_st_dbg_ip_info_given_sizes(uint32_t h2t_t2h_mem_size, uint32_t mgmt_me
 
 void init_descriptor()
 {
-    uint64_t desc_depth = fpga_read_64(g_mmio_handle, ST_DBG_IP_CONFIG_H2T_T2H_DESC_DEPTH);
-    g_h2t_descriptor_slots_available = desc_depth & 0xFFFFFFFF;
-    g_mgmt_descriptor_slots_available = desc_depth >> 32;
+    g_h2t_descriptor_slots_available = fpga_read_32(g_mmio_handle, ST_DBG_IP_CONFIG_H2T_T2H_DESC_DEPTH);
+    g_mgmt_descriptor_slots_available = fpga_read_32(g_mmio_handle, ST_DBG_IP_CONFIG_MGMT_MGMT_RSP_DESC_DEPTH);
     g_h2t_descriptor_write_idx = 0;
     g_h2t_descriptor_read_idx = 0;
     g_mgmt_descriptor_write_idx = 0;
